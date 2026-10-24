@@ -1,0 +1,35 @@
+# Allowlist: only the code, the docs and the README images are published.
+# Cards, job folders, outputs, music, the reference corpus and business
+# papers stay local.
+/*
+!/.gitignore
+!/Cargo.toml
+!/Cargo.lock
+!/README.md
+!/CLAUDE.md
+!/RECIPE.md
+!/RUNBOOK-shoot.md
+!/SHOOT-SHEET.html
+!/MUSIC.md
+!/PROCESS-media-machine.md
+!/PLAN-review.md
+!/PLAN-video-cut.md
+!/RESEARCH-composition.md
+!/RESEARCH-resolve-handoff.md
+!/RESEARCH-rust-editing.md
+!/RESEARCH-rust-imaging.md
+!/RESEARCH-shoot-craft.md
+!/RESEARCH-video-edit.md
+!/EXPERIMENT-*.md
+!/src/
+!/tools/
+!/docs/
+!/test/
+/test/*
+!/test/synth-card.sh
+!/jobs/
+/jobs/*
+!/jobs/TEMPLATE/
+
+.DS_Store
+__pycache__/

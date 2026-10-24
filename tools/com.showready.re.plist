@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.showready.re</string>
+
+    <!-- Static server for the re repo: SHOOT-SHEET.html, PLAN.html, job folders.
+         Localhost only; `tailscale serve` maps it to
+         https://<your-machine>.<tailnet>.ts.net:8791 for the phone.
+         Install: cp tools/com.showready.re.plist ~/Library/LaunchAgents/ &&
+                  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.showready.re.plist -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/python3</string>
+        <string>-m</string>
+        <string>http.server</string>
+        <string>8791</string>
+        <string>--bind</string>
+        <string>127.0.0.1</string>
+        <string>--directory</string>
+        <string>/Users/YOU/Code/Supreme/re</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/YOU/Code/Supreme/re</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/YOU/Library/Logs/showready-re.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOU/Library/Logs/showready-re.log</string>
+</dict>
+</plist>

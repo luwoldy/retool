@@ -1,0 +1,272 @@
+<meta charset="utf-8">
+<title>ShowReady Shoot Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #FFFFFF; --paper-2: #F0F2EE; --ink: #1B1F1A; --ink-2: #4A4F49; --muted: #6E736C; --rule: #CFD3CB;
+    --oak: #B8701F; --oak-ink: #7A4A10; --ok: #2E7D4F; --ok-bg: #DFF0E5; --review: #B4432F; --review-bg: #F6E1DC;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --display: "Bricolage Grotesque", "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --ground: #E4E6E1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ground: #101213; }
+  }
+  :root[data-theme="dark"] { --ground: #101213; }
+
+  * { box-sizing: border-box; }
+  html { background: var(--ground); }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 9.4px; line-height: 1.27; -webkit-font-smoothing: antialiased; }
+
+  /* the sheet: letter page on screen and in print */
+  .sheet { background: var(--paper); color: var(--ink); max-width: 8.5in; margin: 24px auto; padding: 0.28in 0.42in 0.16in; box-shadow: 0 2px 18px rgba(0,0,0,0.12); }
+  @media (max-width: 600px) { .sheet { margin: 0; padding: 18px 16px 24px; box-shadow: none; } }
+
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 8px; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: 22px; line-height: 1; letter-spacing: -0.02em; margin: 0; }
+  h1 small { display: block; font-family: var(--sans); font-weight: 400; font-size: 10.5px; color: var(--ink-2); letter-spacing: 0; margin-top: 4px; }
+  .budget { display: flex; gap: 0; font-family: var(--mono); font-size: 9.5px; }
+  .budget div { padding: 3px 9px; border: 1px solid var(--ink); border-right: 0; text-align: center; min-width: 58px; }
+  .budget div:last-child { border-right: 1px solid var(--ink); }
+  .budget b { display: block; font-size: 14px; font-weight: 500; }
+  @media (max-width: 600px) { header { flex-direction: column; align-items: stretch; } }
+
+  .cols { display: grid; grid-template-columns: 1.05fr 1.15fr 1fr; gap: 0 14px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+
+  h2 { font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: 0.01em; margin: 8px 0 3px; padding-bottom: 2px; border-bottom: 1px solid var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+  h2 span { font-family: var(--mono); font-weight: 400; font-size: 9px; color: var(--oak-ink); }
+  section:first-child h2 { margin-top: 0; }
+
+  ul { margin: 0; padding-left: 12px; }
+  li { margin: 0 0 1.5px; }
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  ol.steps li { position: relative; padding-left: 15px; margin: 0 0 2.5px; }
+  ol.steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 1px; font-family: var(--mono); font-size: 9px; color: var(--oak-ink); }
+  b { font-weight: 600; }
+  code { font-family: var(--mono); font-size: 9.5px; }
+  .k { font-family: var(--mono); font-size: 9.5px; }
+
+  .bank { margin: 3px 0 5px; }
+  .bank .name { font-family: var(--display); font-weight: 700; font-size: 10.5px; }
+  .bank .name span { font-family: var(--mono); font-weight: 400; font-size: 8.5px; color: var(--muted); margin-left: 6px; }
+  .bank .vals { font-family: var(--mono); font-size: 9.5px; line-height: 1.5; color: var(--ink); }
+  .ladder { display: inline-flex; gap: 2px; }
+  .ladder span { padding: 0 3px; border: 1px solid var(--rule); border-radius: 2px; }
+  .ladder span.mid { border-color: var(--oak); color: var(--oak-ink); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 9px; line-height: 1.2; }
+  td { padding: 2px 4px 2px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.n { font-family: var(--mono); color: var(--muted); width: 14px; padding-right: 3px; }
+  td.s { font-weight: 600; white-space: nowrap; width: 34%; }
+  td.note { color: var(--ink-2); }
+  .min { margin-top: 4px; font-size: 9.5px; color: var(--ink-2); }
+
+  pre { margin: 3px 0 4px; padding: 5px 7px; background: var(--paper-2); font-family: var(--mono); font-size: 9.2px; line-height: 1.4; white-space: pre-wrap; border-radius: 2px; }
+  .pill { display: inline-block; font-family: var(--mono); font-size: 8.5px; font-weight: 500; letter-spacing: 0.05em; padding: 0 5px; border-radius: 2px; vertical-align: 1px; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.review { background: var(--review-bg); color: var(--review); }
+  .rule { font-weight: 600; color: var(--oak-ink); }
+
+  .prep { margin-top: 8px; padding: 5px 8px; border: 1px solid var(--rule); border-left: 3px solid var(--oak); font-size: 9.2px; line-height: 1.35; }
+  .prep b { font-family: var(--display); font-size: 10px; margin-right: 4px; }
+  footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; padding-top: 4px; border-top: 1px solid var(--rule); font-size: 8.8px; color: var(--muted); font-family: var(--mono); }
+
+  @page { size: letter; margin: 0; }
+  @media print {
+    html, body { background: #fff; }
+    .sheet { max-width: none; margin: 0; padding: 0.28in 0.42in 0.16in; box-shadow: none; }
+    .cols { grid-template-columns: 1.05fr 1.15fr 1fr; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+
+<div class="sheet">
+  <header>
+    <h1>Shoot sheet<small>One house, one card, 100 minutes. Anything you do that isn't on this page, write down. Reshoot before the key goes back.</small></h1>
+    <div class="budget" aria-label="Time budget in minutes">
+      <div>arrival<b>10</b></div><div>stations<b>70</b></div><div>gimbal<b>10</b></div><div>gate<b>10</b></div>
+    </div>
+  </header>
+
+  <div class="cols">
+    <div>
+      <section>
+        <h2>Gear <span>check before leaving</span></h2>
+        <ul>
+          <li>X-H2 with Sigma 10-18 on the body; Sigma 18-50 for details and exteriors from the street</li>
+          <li>Godox V1, charged battery + spare</li>
+          <li>Phone with the Blackmagic Camera app set up (verticals); tripod with bubble level; gimbal balanced for body + 10-18 (the pass at 10–12 mm); variable ND for daylight log video</li>
+          <li>CFexpress in slot 1 (stills), SD in slot 2 (video), both formatted</li>
+          <li>Laptop with <code>retool</code> for the gate</li>
+          <li>Mavic Air 2, charged batteries, ND16, its own microSD formatted; airspace checked at booking</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Camera banks</h2>
+        <div class="bank">
+          <div class="name">C1 RE-BRKT <span>stills · bracket</span></div>
+          <div class="vals">M · f/6.4 · ISO 125 · <span class="ladder"><span>−2</span><span>−1</span><span class="mid">0</span><span>+1</span><span>+2</span></span> EV, 0→−→+<br>electronic shutter · IS off · 2 s timer<br>RAF lossless · WB 5000 K · DR100<br>middle frame 1/30 or slower</div>
+        </div>
+        <div class="bank">
+          <div class="name">C2 RE-FLASH <span>stills · pop</span></div>
+          <div class="vals">M · f/6.4 · ISO 320 · 1/125 · mechanical<br>V1 TTL 0 EV, bounced 45–90° up and behind · one frame</div>
+        </div>
+        <div class="bank">
+          <div class="name">Video <span>tripod + gimbal · slowed 2× in the edit</span></div>
+          <div class="vals">4K 60p · H.265 10-bit · F-Log2 · 1/125 · f/2.8–4 · ISO auto, zebras 70 % · WB 5000 K · ND outdoors<br>phone, verticals: Blackmagic Camera app · 4K 60p · H.265 · Apple Log on 15 Pro+ (not HDR, not ProRes) · 1/125 · WB 5000 K · ISO auto</div>
+        </div>
+        <div class="bank">
+          <div class="name">Drone <span>Mavic Air 2</span></div>
+          <div class="vals">photo: AEB 5 × 0.7 EV · 12 MP · JPEG + RAW · 4:3 · auto EV 0 · WB 5000 K<br>video: 4K 60p · H.265 · D-Cinelike · ISO 100 · 1/120 (ND16 in sun) · WB 5000 K · Cine mode · subtitles on</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>On arrival <span>10 min</span></h2>
+        <ol class="steps">
+          <li>Walk the house once with the agent or seller. Lights on everywhere, blinds and curtains open, fans off, TVs off, toilet lids down, counters clear. A warm lamp in a daylit room: off.</li>
+          <li>Fix what the prep list missed: cars out of the driveway (yours on the street, out of every window), bins out of sight, pet bowls, towels, chairs pushed in, beds squared, rugs squared or rolled, cords hidden, fridge bare, family photos and kids' names away, shower empty.</li>
+          <li>Decide the station list; note anything skipped and why.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Per station <span>4 min · 6 frames + 1 clip</span></h2>
+        <ol class="steps">
+          <li><b>Stage</b> the frame: lights, blinds, chairs, cords, floor. Then the four edges: anything poking in moves, or pull back.</li>
+          <li><b>Height from the legs</b>, never the tilt. ~120 cm, keyed to the room: kitchen ~50 cm above the counter (under the upper cabinets), bath above the vanity into the basins, bedroom above mattress. Exteriors door/eye level.</li>
+          <li><b>Level</b>: roll and pitch to zero. More ceiling? Raise the tripod. Never tilt. Then yaw so the main horizontal (bed foot, island edge) is parallel to the frame bottom.</li>
+          <li><b>C1, press once.</b> Hands off until the fifth frame fires.</li>
+          <li><b>Check the middle frame</b>: 1/30 or slower indoors; faster is fine in daylight. ISO 125 and f/6.4 stay.</li>
+          <li><b>C2, press once.</b> Bounce up and behind you, never at the wall you're shooting. Mirrors: shoot from an angle; if the camera must show, a door or plain wall behind it.</li>
+          <li><b>Video, one clip.</b> Movie mode. Hold 3 s still · pan ¾ frame to the destination in ~3 s · hold 2 s · stop. (Slowed 2× in the edit: that is a 6 s pan.) No destination: hold 3 s, stop. Never across a bright window.</li>
+          <li><b>The detail and the verticals.</b> Hero rooms: 18-50 past 24 mm, C2 once (horizontal still), swap back. Then the phone, portrait, elbows in: two 4 s clips with one small move each. Other rooms with a feature: one phone clip. Stage the detail frame too.</li>
+          <li>Anything moving (curtains, fans, pets, people): wait or turn it off. Motion between brackets ruins the fusion.</li>
+        </ol>
+      </section>
+    </div>
+
+    <div>
+      <section>
+        <h2>Stations <span>tour order · ~15</span></h2>
+        <table>
+          <tr><td class="n">1</td><td class="s">Front exterior, straight on</td><td class="note">eye/door height, front-lit, no cars; + a tighter one on the porch: three fronts, the agent picks</td></tr>
+          <tr><td class="n">2</td><td class="s">Front exterior, angle</td><td class="note">18-50 from the street if the lot allows</td></tr>
+          <tr><td class="n">3</td><td class="s">Entry / foyer</td><td class="note">where the eye goes: living room or stairs</td></tr>
+          <tr><td class="n">3b</td><td class="s">Stairs / hallway</td><td class="note">second floor? one frame head-on: "upstairs"</td></tr>
+          <tr><td class="n">4</td><td class="s">Living room A</td><td class="note">from the doorway, three walls</td></tr>
+          <tr><td class="n">5</td><td class="s">Living room B</td><td class="note">opposite corner, toward the windows</td></tr>
+          <tr><td class="n">6</td><td class="s">Dining</td><td class="note">include the connection to the kitchen</td></tr>
+          <tr><td class="n">7</td><td class="s">Kitchen A</td><td class="note">from the dining side, counters clear</td></tr>
+          <tr><td class="n">8</td><td class="s">Kitchen B</td><td class="note">island or range wall, straight on</td></tr>
+          <tr><td class="n">9</td><td class="s">Primary bedroom A</td><td class="note">from the door, bed centered</td></tr>
+          <tr><td class="n">10</td><td class="s">Primary bedroom B</td><td class="note">look back to the door or windows</td></tr>
+          <tr><td class="n">11</td><td class="s">Primary bath</td><td class="note">vanity straight on, into the basins; shower door open if the tile sells</td></tr>
+          <tr><td class="n">12</td><td class="s">Each secondary bedroom</td><td class="note">one each, door corner, two walls; closet or en-suite door in frame</td></tr>
+          <tr><td class="n">13</td><td class="s">Each other bath</td><td class="note">one frame each</td></tr>
+          <tr><td class="n">14</td><td class="s">Bonus rooms</td><td class="note">office, laundry, garage, basement: only if it sells</td></tr>
+          <tr><td class="n">15</td><td class="s">Back patio / deck</td><td class="note">from the door outward</td></tr>
+          <tr><td class="n">16</td><td class="s">Backyard + rear exterior</td><td class="note">from the far corner back at the house</td></tr>
+        </table>
+        <div class="min"><b>Coverage minimum</b> (the tool checks it): front exterior, living, kitchen, one bedroom, one bathroom. Bare room: a second angle from the opposite corner.</div>
+      </section>
+
+      <section>
+        <h2>Gimbal pass <span>10 min · the moves between rooms only</span></h2>
+        <ul>
+          <li>Tripod clips carry the rooms; the gimbal only goes through doors, up stairs, out thresholds.</li>
+          <li>Normal walking pace, bent knees, heel-toe. Slow motion comes from the edit.</li>
+          <li><b>Every move starts and ends on 2 s of stillness.</b> One clip each, in this order:</li>
+        </ul>
+        <ol class="steps">
+          <li><b>Walk-up</b>: start behind a post or hedge, still, walk to the door, still.</li>
+          <li><b>Entry</b>: one continuous move through the door into the living room; end on a feature or window, never a wall.</li>
+          <li><b>Each hallway or stair</b>: head-on, level. The neutral shot that lets the edit turn.</li>
+          <li><b>Primary suite</b>: push in from the door, then look back to the door or terrace (v1 missed it).</li>
+          <li><b>Out to the grounds</b>: dark interior to bright exterior, one take if you can; end outside, still, yard in frame (v1 ended at the door).</li>
+          <li><b>Close</b>: the only pull-back, from the best exterior angle.</li>
+        </ol>
+        <ul><li>Never tilt to hold verticals. Lower the camera.</li></ul>
+      </section>
+
+      <section>
+        <h2>Drone <span>15 min · after the gimbal, in daylight</span></h2>
+        <ul>
+          <li><b>Stills</b>, one AEB each: A1 front ¾, roofline · A2 front straight on, 30–50 ft · A3 backyard · A4 the unique side · A5 context, 150–400 ft · A6 overhead (optional). A1–A3 minimum.</li>
+          <li><b>Video</b>, 2 s still both ends, ~5–8 s move: V1 rising reveal · V2 half orbit · V3 push-in to the door · V4 pull-back and rise (closer).</li>
+          <li>Horizon on a third; front wall parallel to it. Heavy canopy, wind &gt; 15 mph, rain, no LAANC: skip, note it in job.md.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>The 18-50 <span>when to swap · 4 times a house</span></h2>
+        <ul>
+          <li><b>Front exterior from the street</b> (station 2), a full bracket station.</li>
+          <li><b>Front-door or porch detail</b> at station 1 when the build quality shows; C2 once past 24 mm, files as <code>st01_d1</code>.</li>
+          <li><b>One detail still per hero room</b>: kitchen range or island · living fireplace or view · primary headboard wall or window seat · primary bath vanity and tile.</li>
+          <li><b>Verticals are the social footage, on the phone</b>: two per hero room, one in every other room with a feature, one of the facade. 10–12 a house, 4 s each, a tilt or a slide. A crop of a wide keeps a third of it.</li>
+          <li><b>Never</b> for a room wide, never in a bare room.</li>
+          <li>Shoot them <b>at the station, after the video clip</b>, in station order; the tool matches phone clips to rooms by picture, not by clock. <b>Zoom past 24 mm</b> so the tool reads the still as a detail. C2 once, no bracket.</li>
+          <li>A detail is a material, a fixture, a view. Not furniture. Not the toaster.</li>
+        </ul>
+      </section>
+
+    </div>
+
+    <div>
+      <section>
+        <h2>Minimum shot list <span>what the cut needs · tick at the door</span></h2>
+        <ul>
+          <li><b>Stills</b> (bracket + pop): front exterior · living · kitchen · primary bed · primary bath; dining, other beds/baths, patio, yard one each where they exist.</li>
+          <li><b>Station clip, every station</b> (v1 missed the patio): ¾-frame pan in ~2.5 s, then hold 3 s (or hold first). Big room: two or three pops, same position. Every light on. <b>Hero rooms</b>: three or four stills; the phone verticals are the video detail.</li>
+          <li><b>Gimbal first, in daylight</b>, 10-18 at 10–12 mm, 2 s still both ends, ~4 s walks: walk-up · entry · one hallway or stair · primary look-back · out to the grounds · close (the pull-back).</li>
+          <li><b>Phone verticals</b>, 4 s portrait, at the station after its clip: facade 1 · hero rooms 2 each · other rooms with a feature 1 each. Eight minimum, twelve the target.</li>
+          <li><b>Phone</b>: Blackmagic Camera · 4K 60p · H.265 or ProRes · Apple Log (not HDR) · 1/125 · WB 5000 K · ISO auto. Grip out of frame. Fill job.md before the render.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Leave gate <span>10 min · at the door</span></h2>
+<pre>retool card /Volumes/CARD/DCIM/1xx_FUJI
+
+st08 [PART] 5 brk 0 pop 0 det
+st09 [OK  ] 5 brk 1 pop 1 det  bracket ISO 400 (recipe: 125)
+CARD: 14 complete, 1 partial, 1 deviation -> REVIEW</pre>
+        <ul>
+          <li><span class="pill ok">CLEAN</span> and complete stations ≥ your list: <span class="rule">done</span>.</li>
+          <li>Any <code>PART</code> station: <span class="rule">shoot it again now</span>.</li>
+          <li><span class="pill review">REVIEW</span> with a deviation you can't explain: <span class="rule">reshoot that station</span>.</li>
+          <li>Play the walk-up and the entry clip once. Count gimbal clips against the list; station clips against the station count; phone verticals ≥ 8.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Fast rules</h2>
+        <ul>
+          <li>Daylight, sun on the front. Book by the facade bearing: east AM, west PM; north = overcast or virtual twilight.</li>
+          <li>Height from the legs. Level both axes. Never tilt.</li>
+          <li>ISO 125 on brackets, 320 on the pop. Middle frame 1/30 or slower indoors; faster is fine in daylight.</li>
+          <li>One tripod position = one C1, one C2, one clip. Move on.</li>
+          <li>The tool fixes a degree of lean and the lens, not a tilted, moved or missing shot.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Back at the desk</h2>
+<pre>retool run  /Volumes/CARD/DCIM/1xx_FUJI final
+retool deliver realm.json final delivery</pre>
+        <ul>
+          <li><code>final/</code>: one full-res JPEG per station + <code>scorecard.md</code></li>
+          <li>Read the scorecard first; look at anything flagged; cull duplicates</li>
+          <li><code>delivery/</code>: the ordered 2048 px gallery the agent receives</li>
+        </ul>
+      </section>
+
+      <div class="prep"><b>Sent to the seller at booking</b> lights on and bulbs replaced · blinds and curtains open · fans and TVs off · kitchen and bath counters clear · toilet lids down, fresh towels · beds made · pet things away · small rugs rolled or squared · cords tucked · fridge bare · family photos and kids' names away · shower empty · cars out of the driveway, bins out of sight · porch and yard tidy. What's out at 10:00 is what's in the listing.</div>
+    </div>
+  </div>
+
+  <footer><span>ShowReady · shoot sheet · amended after every job</span><span>full runbook: RUNBOOK-shoot.md · plan: PLAN.html</span></footer>
+</div>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>review</title>
+<style>
+:root { --bg:#161719; --panel:#202226; --ink:#e8e6e0; --dim:#9a988f; --line:#33353a; --accent:#f2c14e }
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 -apple-system, "Helvetica Neue", Helvetica, sans-serif }
+header { position:sticky; top:0; z-index:5; background:var(--panel); border-bottom:1px solid var(--line); padding:10px 20px; display:flex; gap:22px; align-items:baseline; flex-wrap:wrap }
+header h1 { font-size:18px; margin:0 }
+.k { color:var(--dim) }
+code { font:12px ui-monospace, Menlo, monospace; background:#0f1012; padding:1px 5px; border-radius:3px }
+.state { margin-left:auto; display:flex; gap:8px; align-items:center }
+button { font:inherit; font-size:13px; background:#2c2f35; color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:3px 9px; cursor:pointer }
+button.primary { background:var(--accent); color:#111; border-color:var(--accent); font-weight:600 }
+button:disabled { opacity:.4; cursor:default }
+main { padding:8px 20px 80px }
+h2 { font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; margin:28px 0 6px }
+h3 { font-size:14px; margin:18px 0 6px }
+.note { background:#2a2618; border-left:3px solid var(--accent); padding:6px 12px; margin:8px 0; color:#e6d9a8 }
+.line { color:var(--dim); font-size:13px; margin:2px 0 }
+.band { display:flex; gap:12px; align-items:flex-start; margin:8px 0; padding:8px; background:var(--panel); border:1px solid var(--line); border-radius:6px }
+.band.dropped { opacity:.35 }
+.band > .label { width:180px; flex:none; font-weight:600 }
+.band > .label small { display:block; color:var(--dim); font-weight:400; margin:2px 0 6px }
+.slots { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px }
+.card { flex:none; background:#0f1012; border:1px solid var(--line); border-radius:4px; overflow:hidden; font-size:12px }
+.card.dirty { outline:2px solid var(--accent) }
+.card.over { outline:2px dashed var(--accent) }
+.card[draggable="true"] { cursor:grab }
+.frames { position:relative; aspect-ratio:16/9; background:#000 }
+.frames img.in { width:100%; height:100%; object-fit:cover; display:block }
+.frames img.out { position:absolute; right:4px; bottom:4px; width:34%; border:1px solid #000; box-shadow:0 0 0 1px #666 }
+.meta { padding:5px 6px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.badge { display:inline-block; padding:0 5px; border-radius:3px; font-size:11px; font-weight:600; color:#111; margin-right:4px }
+.why { color:var(--dim); padding:2px 6px 6px; font-size:11px; white-space:normal }
+.ctl { display:flex; flex-wrap:wrap; gap:3px; padding:0 6px 6px; align-items:center }
+.ctl button { padding:2px 6px }
+.ctl input { width:58px; font:inherit; font-size:12px; background:#1a1b1e; color:var(--ink); border:1px solid var(--line); border-radius:3px; padding:2px 4px }
+figure.still { flex:none; width:150px; margin:0; align-self:center; text-align:center; font-size:11px; color:var(--dim) }
+figure.still img { width:100%; border-radius:4px; display:block; margin-bottom:3px }
+table { border-collapse:collapse; font-size:12px }
+td, th { padding:4px 8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top }
+td img { width:120px; display:block; background:#000 }
+.pool { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px }
+.clip { background:var(--panel); border:1px solid var(--line); border-radius:4px; overflow:hidden; font-size:12px }
+.clip img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; background:#000 }
+.clip div { padding:5px 7px }
+#picker { position:fixed; inset:5% 8%; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:auto; z-index:10; padding:16px 20px; box-shadow:0 20px 60px #000c }
+#picker .clip { cursor:pointer }
+#picker .clip:hover { outline:2px solid var(--accent) }
+#log { background:#0c0d0f; color:#cfd3c8; padding:12px 20px; white-space:pre-wrap; font:12px/1.4 ui-monospace, Menlo, monospace; max-height:45vh; overflow:auto; margin:0; border-bottom:1px solid var(--line) }
+</style>
+</head>
+<body>
+<header id="top"></header>
+<pre id="log" hidden></pre>
+<main id="app"></main>
+<div id="picker" hidden></div>
+<script id="data" type="application/json">/*DATA*/</script>
+<script>
+// The page is a view of the cutlists: the data block above is what `retool plan`
+// (or a save) wrote, rendered here; served by `retool review` it also edits.
+const D = JSON.parse(document.getElementById('data').textContent);
+const served = location.protocol.startsWith('http');
+const editing = served && !D.approved;
+// Resolve's clip colours per role (tools/resolve_build.py ROLE_COLOR)
+const COLOR = { establish:'#3a5a8c', tease:'#e8c34a', wide:'#5aa15a', pan:'#3fa9a0', detail:'#e8c34a', angle:'#a4c639', move:'#8a63b8', static:'#8a8b3a', close:'#e0883a' };
+const UNIT = 150; // px per four beats
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const f3 = x => Number(x).toFixed(3);
+const pool = Object.fromEntries(D.pool.map(c => [c.file, c]));
+const signed = g => (g >= 0 ? '+' : '') + Number(g).toFixed(1);
+const listName = f => f === 'cutlist.md' ? 'master' : f.replace('.md', '');
+
+// edit state per list: which original row sits in each slot, per-row edits, dropped phrase labels
+const S = D.lists.map(L => ({ order: L.rows.map((_, k) => k), edits: {}, drop: new Set() }));
+// n is the 0-based original row here; the data's own `n` (1-based) is overwritten
+const rowAt = (li, k) => { const L = D.lists[li], n = S[li].order[k]; return { ...L.rows[n], ...(S[li].edits[n] || {}), n, slot: L.rows[k] }; };
+const listDirty = li => S[li].drop.size > 0 || Object.keys(S[li].edits).length > 0 || S[li].order.some((n, k) => n !== k);
+const isDirty = () => D.lists.some((_, li) => listDirty(li));
+
+function renderTop() {
+  const t = D.track;
+  const state = D.approved
+    ? `<b>approved ${esc(D.approved)}</b><span class="k">— the page is locked; remove the line from cutlist.md to edit</span>`
+    : served
+      ? `<span class="k" id="dirty"></span><button id="save">Save</button><button id="approve" class="primary">Approve → build in Resolve</button>`
+      : `<span class="k">read-only · <code>retool review ${esc(D.job_dir)} ${esc(D.out_dir)}</code> to edit and approve</span>`;
+  document.getElementById('top').innerHTML = `<h1>${esc(D.address)}</h1>
+    <span><span class="k">track</span> ${esc(t.file)} · ${esc(t.bpm)} BPM · accent ${esc(t.accent_s)} s</span>
+    <span><span class="k">runtime</span> ${esc(D.runtime)}</span>
+    <span class="state">${state}</span>`;
+  const dirty = document.getElementById('dirty');
+  if (dirty) {
+    const n = D.lists.filter((_, li) => listDirty(li)).length;
+    dirty.textContent = n ? `unsaved edits in ${n} cutlist${n > 1 ? 's' : ''}` : '';
+    document.getElementById('approve').disabled = n > 0;
+    document.getElementById('approve').title = n ? 'save first' : 'writes approved: and builds the Resolve project';
+  }
+}
+
+function card(li, k) {
+  const L = D.lists[li], r = rowAt(li, k), b = L.bands[r.slot.band];
+  const orig = L.rows[r.n];
+  const swapped = r.clip !== orig.clip, moved = r.n !== k, slipped = !swapped && r.in !== orig.in;
+  const c = pool[r.clip];
+  const w = Math.max(UNIT / 2, r.slot.beats * UNIT / 4);
+  const tin = swapped ? (c ? c.thumb : '') : r.thumb_in, tout = swapped ? '' : r.thumb_out;
+  const win = swapped ? 'window laid on save' : `${f3(r.in)}–${f3(r.out)} s`;
+  const gain = r.camera && !swapped ? ` · gain ${signed(r.gain)}` : '';
+  const ctl = !editing ? '' : `<div class="ctl"><button data-swap="${li}:${k}">swap</button>${swapped ? '' :
+    `<button data-slip="${li}:${k}:-0.25">−¼</button><input type="number" step="0.25" min="0" value="${f3(r.in)}" data-in="${li}:${k}"><button data-slip="${li}:${k}:0.25">+¼</button>`}</div>`;
+  return `<div class="card${swapped || moved || slipped ? ' dirty' : ''}" style="width:${w}px" data-li="${li}" data-k="${k}"${editing && b.on_grid ? ' draggable="true"' : ''}>
+    <div class="frames">${tin ? `<img class="in" src="${esc(tin)}" title="in frame">` : ''}${tout ? `<img class="out" src="${esc(tout)}" title="out frame">` : ''}</div>
+    <div class="meta" title="${esc(r.clip)}"><span class="badge" style="background:${COLOR[r.role] || '#999'}">${esc(r.role)}</span>${esc(r.room)} · ${esc(r.clip)}</div>
+    <div class="meta k">${r.slot.beats} beats · ${win}${gain}</div>
+    <div class="why">${esc(r.why)}</div>${ctl}</div>`;
+}
+
+function band(li, bi) {
+  const L = D.lists[li], b = L.bands[bi];
+  const ks = L.rows.map((_, k) => k).filter(k => L.rows[k].band === bi);
+  if (!ks.length) return '';
+  const dropped = S[li].drop.has(b.label);
+  const beats = ks.reduce((a, k) => a + L.rows[k].beats, 0);
+  const drop = editing && b.kind === 'phrase' ? `<button data-drop="${li}:${esc(b.label)}">${dropped ? 'keep' : 'drop phrase'}</button>` : '';
+  const still = b.still ? `<figure class="still"><img src="${esc(b.still)}">${esc(b.station)}</figure>` : '';
+  return `<section class="band ${b.kind}${dropped ? ' dropped' : ''}"><div class="label">${esc(b.label)}<small>${beats} beats · ${ks.length} slot${ks.length > 1 ? 's' : ''}</small>${drop}</div>
+    <div class="slots">${ks.map(k => card(li, k)).join('')}</div>${still}</section>`;
+}
+
+function skippedTable(L) {
+  if (!L.skipped.length) return '';
+  return `<h3>not shown</h3><table><tr><th></th><th>clip</th><th>room</th><th>why</th></tr>${L.skipped.map(s =>
+    `<tr><td>${s.thumb ? `<img src="${esc(s.thumb)}">` : ''}</td><td>${esc(s.clip)}</td><td>${esc(s.room)}</td><td>${esc(s.why)}</td></tr>`).join('')}</table>`;
+}
+
+function clipCard(c, extra) {
+  const where = c.used.length ? c.used.join(', ') : 'not in the cut';
+  return `<div class="clip"${extra || ''}><img src="${esc(c.thumb)}"><div><b>${esc(c.file)}</b><br>${esc([c.station, c.room, c.kind, c.portrait ? 'portrait' : ''].filter(Boolean).join(' · '))}<br><span class="k">${esc(c.segments)}</span><br><span class="k">${esc(where)}</span></div></div>`;
+}
+
+function render() {
+  renderTop();
+  let html = '';
+  if (D.notes) html += `<div class="note">${esc(D.notes)}</div>`;
+  html += `<div class="line">${esc(D.patterns)}</div>`;
+  D.lists.forEach((L, li) => {
+    if (L.master) {
+      html += `<h2>Master</h2><div class="line">Thumbnails go through the fallback cubes (WDR for the camera, the Apple approximation for the phone): recognition, not colour. The Resolve render is the colour reference.</div>`;
+    } else {
+      html += `<h2>${esc(listName(L.file))} — ${esc(L.header.purpose || '')}</h2><div class="line">${esc(L.header.lead || '')} · ${esc(L.header.native || '')} · ends ${esc(L.header.end || '')} s</div>`;
+    }
+    html += L.bands.map((_, bi) => band(li, bi)).join('') + skippedTable(L);
+  });
+  html += `<h2>Pool — every clip on the card</h2><div class="pool">${D.pool.map(c => clipCard(c)).join('')}</div>`;
+  document.getElementById('app').innerHTML = html;
+}
+
+function setEdit(li, n, patch) {
+  const L = D.lists[li], orig = L.rows[n];
+  const e = { ...(S[li].edits[n] || {}), ...patch };
+  if (e.clip === orig.clip) delete e.clip;
+  if (e.in === orig.in) { delete e.in; delete e.out; }
+  if (Object.keys(e).length) S[li].edits[n] = e; else delete S[li].edits[n];
+}
+
+function slipTo(li, k, value) {
+  const r = rowAt(li, k), len = r.out - r.in, dur = r.dur || Infinity;
+  let nin = Math.max(0, Math.min(value, Math.max(0, dur - len)));
+  nin = Math.round(nin * 60) / 60;
+  setEdit(li, r.n, { in: nin, out: Math.min(nin + len, dur) });
+  render();
+}
+
+function openPicker(li, k) {
+  const L = D.lists[li], r = rowAt(li, k), room = L.rows[r.n].room;
+  const groups = [['skipped — revive', []], [`same room — ${room}`, []], ['the rest of the card', []]];
+  const seen = new Set();
+  for (const s of L.skipped) for (const f of s.clips) if (pool[f] && !seen.has(f)) { seen.add(f); groups[0][1].push(clipCard(pool[f], ` data-pick="${li}:${k}:${esc(f)}" title="${esc(s.why)}"`)); }
+  for (const c of D.pool) if (!seen.has(c.file) && c.room === room) { seen.add(c.file); groups[1][1].push(clipCard(c, ` data-pick="${li}:${k}:${esc(c.file)}"`)); }
+  for (const c of D.pool) if (!seen.has(c.file)) { seen.add(c.file); groups[2][1].push(clipCard(c, ` data-pick="${li}:${k}:${esc(c.file)}"`)); }
+  const p = document.getElementById('picker');
+  p.innerHTML = `<h3 style="margin-top:0">${esc(listName(L.file))} slot ${k + 1}: ${r.slot.beats} beats, ${esc(r.role)} · ${esc(room)} — now ${esc(r.clip)} <button id="closePicker">close</button></h3>
+    <div class="line">The window is re-laid by the planner's anchor for the role (a pan from its start, a wide on its hold, a detail centred) when you save.</div>` +
+    groups.filter(g => g[1].length).map(g => `<h3>${esc(g[0])}</h3><div class="pool">${g[1].join('')}</div>`).join('');
+  p.hidden = false;
+}
+
+async function save() {
+  for (let li = 0; li < D.lists.length; li++) {
+    if (!listDirty(li)) continue;
+    const L = D.lists[li], st = S[li];
+    const body = { cutlist: L.file, rows: st.order.map(n => { const r = { ...L.rows[n], ...(st.edits[n] || {}) }; return { n: n + 1, clip: r.clip, in: r.in, out: r.out }; }), drop: [...st.drop], header: {} };
+    const res = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const text = await res.text();
+    if (!res.ok) { alert(`${L.file}: ${text}`); return; }
+  }
+  location.reload();
+}
+
+async function approve() {
+  if (isDirty()) { alert('Save first.'); return; }
+  if (!confirm('Approve the plan and build the Resolve project? The project is rebuilt if it already exists.')) return;
+  const log = document.getElementById('log');
+  log.hidden = false; log.textContent = '';
+  document.getElementById('approve').disabled = true;
+  document.getElementById('save').disabled = true;
+  const res = await fetch('/approve', { method: 'POST' });
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    log.textContent += dec.decode(value, { stream: true });
+    log.scrollTop = log.scrollHeight;
+  }
+  log.textContent += '\n— reload to see the page locked —';
+}
+
+let drag = null;
+const at = el => ({ li: +el.dataset.li, k: +el.dataset.k });
+const compatible = (a, b) => {
+  if (!a || !b || a.li !== b.li || a.k === b.k) return false;
+  const L = D.lists[a.li], x = L.rows[a.k], y = L.rows[b.k];
+  return x.band === y.band && x.beats === y.beats && L.bands[x.band].on_grid;
+};
+const app = document.getElementById('app');
+app.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  if (t.dataset.drop) { const [li, ...rest] = t.dataset.drop.split(':'); const label = rest.join(':'); const d = S[+li].drop; d.has(label) ? d.delete(label) : d.add(label); render(); }
+  else if (t.dataset.swap) { const [li, k] = t.dataset.swap.split(':').map(Number); openPicker(li, k); }
+  else if (t.dataset.slip) { const [li, k, d] = t.dataset.slip.split(':'); slipTo(+li, +k, rowAt(+li, +k).in + Number(d)); }
+});
+app.addEventListener('change', e => { if (e.target.dataset.in) { const [li, k] = e.target.dataset.in.split(':').map(Number); slipTo(li, k, Number(e.target.value)); } });
+app.addEventListener('dragstart', e => { const c = e.target.closest('.card[draggable="true"]'); if (c) { drag = at(c); e.dataTransfer.effectAllowed = 'move'; } });
+app.addEventListener('dragover', e => { const c = e.target.closest('.card'); if (c && compatible(drag, at(c))) { e.preventDefault(); c.classList.add('over'); } });
+app.addEventListener('dragleave', e => { const c = e.target.closest('.card'); if (c) c.classList.remove('over'); });
+app.addEventListener('drop', e => {
+  const c = e.target.closest('.card'); if (!c) return;
+  const to = at(c);
+  if (compatible(drag, to)) { e.preventDefault(); const o = S[to.li].order; [o[drag.k], o[to.k]] = [o[to.k], o[drag.k]]; }
+  drag = null; render();
+});
+app.addEventListener('dragend', () => { drag = null; document.querySelectorAll('.card.over').forEach(c => c.classList.remove('over')); });
+document.getElementById('picker').addEventListener('click', e => {
+  if (e.target.id === 'closePicker') { document.getElementById('picker').hidden = true; return; }
+  const t = e.target.closest('[data-pick]'); if (!t) return;
+  const [li, k, ...rest] = t.dataset.pick.split(':');
+  setEdit(+li, rowAt(+li, +k).n, { clip: rest.join(':') });
+  document.getElementById('picker').hidden = true;
+  render();
+});
+document.getElementById('top').addEventListener('click', e => { if (e.target.id === 'save') save(); else if (e.target.id === 'approve') approve(); });
+render();
+</script>
+</body>
+</html>
